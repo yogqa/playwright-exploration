@@ -36,11 +36,20 @@ This project provides **three** primary interfaces for interacting with Playwrig
 
 **Default for Exploration.** This is the specialized CLI for AI agents to control the browser efficiently.
 
+### Two Variants
+| Script | Command | Use When |
+|---|---|---|
+| `agent-cli` | `npm run agent-cli -- <cmd>` | Exploring public/unauthenticated pages |
+| `agent-cli:auth` | `npm run agent-cli:auth -- <cmd>` | Exploring pages that require login (pre-loads `auth/admin.json`) |
+
+> ⚠️ **The `--` separator is required** when passing arguments through npm scripts. Without it, npm swallows the args.
+
 ### Capabilities
-- **Open Page**: `npm run agent-cli open https://example.com`
-- **Click**: `npm run agent-cli click "text=Login"`
-- **Type**: `npm run agent-cli fill "#username" "admin"`
-- **Inspect**: `npm run agent-cli snapshot` (Returns element refs without massive DOM dumps).
+- **Open Page**: `npm run agent-cli -- open https://example.com`
+- **Navigate**: `npm run agent-cli:auth -- goto /angularpractice/shop`
+- **Click**: `npm run agent-cli -- click "text=Login"`
+- **Type**: `npm run agent-cli -- fill "#username" "admin"`
+- **Inspect**: `npm run agent-cli -- snapshot` (Returns element refs without massive DOM dumps).
 
 ### Why use this over MCP?
 - **Stateless & Concise**: Commands are atomic (`click`, `fill`).
@@ -62,6 +71,13 @@ This project provides **three** primary interfaces for interacting with Playwrig
 - **Full State Streaming**: Sends the entire accessibility tree, console logs, and network events to the client context.
 - **Client-Driven**: Intended for tools like **Claude Desktop** or **Cursor** that implement the MCP client.
 
+### MCP Configuration Files
+The MCP server is pre-configured in two locations:
+- **`.agent/mcp.json`** — Agent MCP config (Gemini / Antigravity agent)
+- **`.vscode/mcp.json`** — VS Code MCP config (GitHub Copilot agent)
+
+Both configs launch Playwright MCP with **Chromium + headless + admin storageState** so the agent starts already authenticated.
+
 ### Best For
 - **External Agents**: If you are connecting an external tool to this project.
 - **Deep Introspection**: When you need to monitor *everything* happening in the browser in real-time.
@@ -73,8 +89,9 @@ This project provides **three** primary interfaces for interacting with Playwrig
 | Task | Recommended Tool | Command |
 |---|---|---|
 | **"Run the test suite"** | ✅ **Standard CLI** | `npm test` |
-| **"Debug a failure"** | ✅ **Standard CLI** (logs) -> **Agentic CLI** (interact) | `npm test` -> `npm run agent-cli` |
-| **"Explore a new URL"** | ✅ **Agentic CLI** | `npm run agent-cli -- open <url>` |
+| **"Debug a failure"** | ✅ **Standard CLI** (logs) → **Agentic CLI** (interact) | `npm test` → `npm run agent-cli:auth -- goto <url>` |
+| **"Explore a public URL"** | ✅ **Agentic CLI** | `npm run agent-cli -- open <url>` |
+| **"Explore an authenticated page"** | ✅ **Agentic CLI (auth)** | `npm run agent-cli:auth -- open <url>` |
 | **"Connect Claude Desktop"** | ✅ **MCP Protocol** | `npm run mcp` |
 
 ### 🛑 Anti-Pattern

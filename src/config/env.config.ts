@@ -9,6 +9,7 @@ const envSchema = z.object({
     ADMIN_PASS: z.string().default('learning'),
     STANDARD_USER: z.string().default('rahulshettyacademy'),
     STANDARD_PASS: z.string().default('learning'),
+    API_TOKEN: z.string().optional(),
     CI: z.string().optional(),
 });
 

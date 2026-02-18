@@ -8,9 +8,9 @@ import { BasePage } from './base.page';
  * Exposes locators and data-fetching methods — NO assertions.
  */
 export class DashboardPage extends BasePage {
-    // ── Private Locators ──
-    private readonly navbarBrand = this.page.locator('.navbar-brand');
-    private readonly productCards = this.page.locator('.card');
+    // ── Locators (getters resolve fresh on each access — resilient to re-renders) ──
+    private get navbarBrand() { return this.page.locator('.navbar-brand'); }
+    private get productCards() { return this.page.locator('.card'); }
 
     constructor(page: Page) {
         super(page);

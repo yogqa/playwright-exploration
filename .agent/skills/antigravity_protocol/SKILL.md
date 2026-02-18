@@ -84,9 +84,71 @@ If the test's purpose is NOT to test login, use API-based setup or storageState 
 
 | Action | Correct Usage |
 |--------|---------------|
-| Click an element | `this.action.click(locator, { description: '...' })` |
-| Fill a text field | `this.action.fill(locator, value, { description: '...' })` |
-| Get text content | `this.action.getText(locator, { description: '...' })` |
+| Define a locator | `private get myBtn() { return this.page.locator('#id'); }` **(getter, not field)** |
+| Click an element | `this.action.click(this.myBtn, { description: '...' })` |
+| Fill a text field | `this.action.fill(this.myInput, value, { description: '...' })` |
+| Get text content | `this.action.getText(this.myEl, { description: '...' })` |
 | Navigate to page | `this.nav.goto('/path')` |
 | Assert visibility | `await expect(locator).toBeVisible()` **(in .spec.ts only)** |
 | Assert text | `expect(text).toContain('...')` **(in .spec.ts only)** |
+| Multiple assertions | `await expect.soft(locator).toBeVisible()` **(continue on failure)** |
+| Poll async state | `await expect.poll(() => fn(), { timeout: 5000 }).toBe(value)` **(no hard waits)** |
+| API call in test | `const res = await apiContext.get('/endpoint')` **(via fixture)** |
+
+---
+
+## Approved Patterns
+
+### Locator Definition — Getter Pattern (Layer 2)
+```typescript
+// ✅ Correct — resolves fresh on each access (resilient to re-renders)
+private get submitButton() { return this.page.getByRole('button', { name: 'Submit' }); }
+
+// ❌ Wrong — resolved once at construction time
+private readonly submitButton = this.page.locator('#submit');
+```
+
+### Soft Assertions (Layer 3)
+```typescript
+// Use when verifying multiple independent conditions in one test
+await expect.soft(page.getByText('Email required')).toBeVisible();
+await expect.soft(page.getByText('Password required')).toBeVisible();
+// Test continues even if one soft assertion fails
+```
+
+### Polling — No Hard Waits (Layer 3)
+```typescript
+// ✅ Correct — retries until condition is met or timeout
+await expect.poll(
+    () => loginPage.getErrorMessage(),
+    { message: 'Error did not appear', timeout: 5000 },
+).toContain('Incorrect');
+
+// ❌ Wrong — brittle fixed sleep
+await page.waitForTimeout(1000);
+```
+
+### Route Mocking — Edge Case Testing (Layer 3)
+```typescript
+// Intercept API to test empty state
+await page.route('**/api/products*', async (route) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', json: [] });
+});
+// Now test the "No products found" UI state
+```
+
+### Zod API Response Validation (Layer 3, with `apiContext` fixture)
+```typescript
+import { z } from 'zod';
+
+const ProductSchema = z.object({
+    id: z.number(),
+    name: z.string(),
+    price: z.number(),
+});
+
+const res = await apiContext.get('/api/products/1');
+const data = ProductSchema.parse(await res.json()); // throws if shape is wrong
+expect(data.name).toBe('Brocolli');
+```
+

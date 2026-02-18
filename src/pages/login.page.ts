@@ -10,12 +10,12 @@ import { DashboardPage } from './dashboard.page';
  * Returns data or next Page Object — NEVER assertions.
  */
 export class LoginPage extends BasePage {
-    // ── Private Locators ──
-    private readonly usernameInput = this.page.locator('#username');
-    private readonly passwordInput = this.page.locator('#password');
-    private readonly termsCheckbox = this.page.locator('#terms');
-    private readonly loginButton = this.page.locator('#signInBtn');
-    private readonly alertDanger = this.page.locator('.alert-danger');
+    // ── Locators (getters resolve fresh on each access — resilient to re-renders) ──
+    private get usernameInput() { return this.page.locator('#username'); }
+    private get passwordInput() { return this.page.locator('#password'); }
+    private get termsCheckbox() { return this.page.locator('#terms'); }
+    private get loginButton() { return this.page.locator('#signInBtn'); }
+    private get alertDanger() { return this.page.locator('.alert-danger'); }
 
     constructor(page: Page) {
         super(page);

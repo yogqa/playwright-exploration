@@ -10,8 +10,8 @@ test.describe('Login Flow - Rahul Shetty Academy', () => {
         // Wait for navigation and verify shop page loaded
         await dashboard.page.waitForURL('**/angularpractice/shop');
 
-        // Assertion in Layer 3 only
-        await expect(dashboard.getNavbarLocator()).toBeVisible();
+        // Soft assertions — both checks run even if one fails
+        await expect.soft(dashboard.getNavbarLocator()).toBeVisible();
         expect(await dashboard.isShopLoaded()).toBe(true);
     });
 
@@ -30,10 +30,10 @@ test.describe('Login Flow - Rahul Shetty Academy', () => {
         await loginPage.goto();
         await loginPage.login(TestUsers.invalid.username, TestUsers.invalid.password);
 
-        // Wait a moment for error to appear
-        await loginPage.page.waitForTimeout(1000);
-
-        const error = await loginPage.getErrorMessage();
-        expect(error).toContain('Incorrect');
+        // Poll until the error message appears — no hard wait needed
+        await expect.poll(
+            () => loginPage.getErrorMessage(),
+            { message: 'Error message did not appear after invalid login', timeout: 5000 },
+        ).toContain('Incorrect');
     });
 });

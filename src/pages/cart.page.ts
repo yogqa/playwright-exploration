@@ -1,4 +1,4 @@
-import { Locator, Page } from '@playwright/test';
+import { Locator, Page, expect } from '@playwright/test';
 import { BasePage } from './base.page';
 
 /**
@@ -8,15 +8,15 @@ import { BasePage } from './base.page';
  * Exposes locators and action methods — NO assertions.
  */
 export class CartPage extends BasePage {
-    // ── Private Locators ──
-    private readonly searchInput = this.page.locator('.search-keyword');
-    private readonly searchButton = this.page.locator('.search-button');
-    private readonly products = this.page.locator('.product');
-    private readonly cartIcon = this.page.locator('.cart-icon');
-    private readonly checkoutButton = this.page.locator('button', { hasText: 'PROCEED TO CHECKOUT' });
-    private readonly promoCodeInput = this.page.locator('.promoCode');
-    private readonly promoButton = this.page.locator('.promoBtn');
-    private readonly promoInfo = this.page.locator('.promoInfo');
+    // ── Locators (getters resolve fresh on each access — resilient to re-renders) ──
+    private get searchInput() { return this.page.locator('.search-keyword'); }
+    private get searchButton() { return this.page.locator('.search-button'); }
+    private get products() { return this.page.locator('.product'); }
+    private get cartIcon() { return this.page.locator('.cart-icon'); }
+    private get checkoutButton() { return this.page.locator('button', { hasText: 'PROCEED TO CHECKOUT' }); }
+    private get promoCodeInput() { return this.page.locator('.promoCode'); }
+    private get promoButton() { return this.page.locator('.promoBtn'); }
+    private get promoInfo() { return this.page.locator('.promoInfo'); }
 
     constructor(page: Page) {
         super(page);
@@ -32,8 +32,11 @@ export class CartPage extends BasePage {
     async search(productName: string): Promise<void> {
         await this.action.fill(this.searchInput, productName, { description: 'Search input' });
         await this.action.click(this.searchButton, { description: 'Search button' });
-        // Wait for results to update
-        await this.page.waitForTimeout(1000); // Simple wait for demo, ideally wait for specific element change
+        // Poll until at least one matching product card is visible (replaces hard wait)
+        await expect.poll(
+            () => this.products.count(),
+            { message: `No products found matching "${productName}"`, timeout: 5000 },
+        ).toBeGreaterThan(0);
     }
 
     /** Add a specific product to cart by name */
