@@ -5,22 +5,17 @@ dotenv.config();
 
 /**
  * Antigravity Test Automation Framework — Playwright Configuration
+ * Target: https://automationexercise.com
  *
- * Key decisions:
- * - testDir points to src/tests (Layer 3)
- * - globalSetup handles multi-role auth (admin + standard_user)
- * - Allure + list reporters for rich reporting
- * - Video/trace/screenshot captured only on failure (lean CI artifacts)
+ * Projects:
+ *   chromium  → src/tests/app/     (pre-authenticated via auth/user.json)
+ *   no-auth   → src/tests/no-auth/ (fresh browser — register/login/contact-us flows)
+ *   security  → src/tests/         (ai-guard.spec.ts — no auth needed)
  */
 export default defineConfig({
-  testDir: './src/tests',
-
-  /* Global setup/teardown for multi-role auth */
+  /* Global setup registers a fresh user and saves auth/user.json */
   globalSetup: require.resolve('./global-setup'),
   globalTeardown: require.resolve('./global-teardown'),
-
-  /* Run tests in files in parallel */
-  fullyParallel: true,
 
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
@@ -28,8 +23,8 @@ export default defineConfig({
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
 
-  /* Opt out of parallel tests on CI */
-  workers: process.env.CI ? 1 : undefined,
+  /* Serial execution — app/ tests share one logged-in user, parallel runs corrupt cart state */
+  workers: 1,
 
   /* Reporter: list for console + Allure for rich HTML dashboard */
   reporter: [
@@ -39,39 +34,50 @@ export default defineConfig({
 
   /* Shared settings for all projects */
   use: {
-    /* Base URL — actions like page.goto('/login') resolve against this */
-    baseURL: process.env.BASE_URL || 'https://rahulshettyacademy.com',
-
-    /* Capture artifacts only on failure to keep CI lean */
+    baseURL: process.env.BASE_URL || 'https://automationexercise.com',
     video: 'retain-on-failure',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
 
-  /* Configure projects */
   projects: [
+    /**
+     * App project — authenticated tests.
+     * global-setup registers a user and saves storageState → auth/user.json.
+     * Every test in app/ starts already logged in.
+     */
     {
-      name: 'chromium',
+      name: 'app',
+      testDir: './src/tests/app',
       use: {
         ...devices['Desktop Chrome'],
-        storageState: './auth/admin.json',
+        storageState: './auth/user.json',
       },
     },
 
-    // Uncomment to add multi-browser coverage:
-    // {
-    //   name: 'firefox',
-    //   use: {
-    //     ...devices['Desktop Firefox'],
-    //     storageState: './auth/admin.json',
-    //   },
-    // },
-    // {
-    //   name: 'webkit',
-    //   use: {
-    //     ...devices['Desktop Safari'],
-    //     storageState: './auth/admin.json',
-    //   },
-    // },
+    /**
+     * No-auth project — tests that must start unauthenticated.
+     * Registration, login flows, contact us, checkout-with-register.
+     */
+    {
+      name: 'no-auth',
+      testDir: './src/tests/no-auth',
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
+
+    /**
+     * Security project — AI guard tests (no auth needed).
+     */
+    {
+      name: 'security',
+      testDir: './src/tests',
+      testMatch: '**/ai-guard.spec.ts',
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
   ],
 });
+

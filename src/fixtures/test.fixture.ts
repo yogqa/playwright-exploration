@@ -1,7 +1,12 @@
 import { test as base, request, APIRequestContext } from '@playwright/test';
-import { LoginPage } from '../pages/login.page';
-import { DashboardPage } from '../pages/dashboard.page';
+import { HomePage } from '../pages/home.page';
+import { AuthPage } from '../pages/auth.page';
+import { ProductsPage } from '../pages/products.page';
+import { ProductDetailPage } from '../pages/product-detail.page';
 import { CartPage } from '../pages/cart.page';
+import { CheckoutPage } from '../pages/checkout.page';
+import { PaymentPage } from '../pages/payment.page';
+import { ContactUsPage } from '../pages/contact-us.page';
 import { envConfig } from '../config/env.config';
 
 /**
@@ -9,35 +14,56 @@ import { envConfig } from '../config/env.config';
  * Tests destructure the POMs they need — no manual instantiation.
  */
 type AntigravityFixtures = {
-    loginPage: LoginPage;
-    dashboardPage: DashboardPage;
+    homePage: HomePage;
+    authPage: AuthPage;
+    productsPage: ProductsPage;
+    productDetailPage: ProductDetailPage;
     cartPage: CartPage;
+    checkoutPage: CheckoutPage;
+    paymentPage: PaymentPage;
+    contactUsPage: ContactUsPage;
     apiContext: APIRequestContext;
 };
 
 export const test = base.extend<AntigravityFixtures>({
-    loginPage: async ({ page }, use) => {
-        const loginPage = new LoginPage(page);
-        await use(loginPage);
+    homePage: async ({ page }, use) => {
+        await use(new HomePage(page));
     },
 
-    dashboardPage: async ({ page }, use) => {
-        const dashboardPage = new DashboardPage(page);
-        await use(dashboardPage);
+    authPage: async ({ page }, use) => {
+        await use(new AuthPage(page));
+    },
+
+    productsPage: async ({ page }, use) => {
+        await use(new ProductsPage(page));
+    },
+
+    productDetailPage: async ({ page }, use) => {
+        await use(new ProductDetailPage(page));
     },
 
     cartPage: async ({ page }, use) => {
-        const cartPage = new CartPage(page);
-        await use(cartPage);
+        await use(new CartPage(page));
+    },
+
+    checkoutPage: async ({ page }, use) => {
+        await use(new CheckoutPage(page));
+    },
+
+    paymentPage: async ({ page }, use) => {
+        await use(new PaymentPage(page));
+    },
+
+    contactUsPage: async ({ page }, use) => {
+        await use(new ContactUsPage(page));
     },
 
     /**
      * API Context Factory — Law #5 (Hybrid Law)
      * Provides a pre-configured APIRequestContext for API-based setup/teardown.
-     * Use this in tests to seed data or assert API state without UI overhead.
      * Auto-disposes after each test to prevent connection leaks.
      */
-    apiContext: async (_fixtures, use) => {
+    apiContext: async ({ }, use) => {
         const ctx = await request.newContext({
             baseURL: envConfig.BASE_URL,
             extraHTTPHeaders: {

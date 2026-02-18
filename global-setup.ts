@@ -3,33 +3,20 @@ import { envConfig } from './src/config/env.config';
 import * as fs from 'fs';
 
 /**
- * Global Setup — Multi-Role Authentication
+ * Global Setup — Register + Authenticate a shared test user
  *
- * Logs in as each persona (admin, standard_user) and saves the browser
- * storageState to auth/*.json. Tests reference these files to skip
- * re-authenticating on every run.
+ * Strategy:
+ *   1. Register a fresh user on automationexercise.com (unique email per run)
+ *   2. Save the browser storageState → auth/user.json  (used by the `chromium` project)
+ *   3. Write the credentials → auth/user-credentials.json  (read by UserData.validLogin())
  *
- * Updated for rahulshettyacademy.com/loginpagePractise/
+ * This means tests NEVER need a pre-existing account. Every CI run gets a
+ * clean user. Tests that test registration itself (TC1, TC5) create their
+ * own throwaway accounts with separate unique emails.
  */
 
-interface UserPersona {
-    username: string;
-    password: string;
-    statePath: string;
-}
-
-const personas: UserPersona[] = [
-    {
-        username: envConfig.ADMIN_USER,
-        password: envConfig.ADMIN_PASS,
-        statePath: './auth/admin.json',
-    },
-    {
-        username: envConfig.STANDARD_USER,
-        password: envConfig.STANDARD_PASS,
-        statePath: './auth/standard_user.json',
-    },
-];
+const CREDENTIALS_PATH = './auth/user-credentials.json';
+const STATE_PATH = './auth/user.json';
 
 async function globalSetup(_config: FullConfig) {
     // Ensure auth directory exists
@@ -38,46 +25,69 @@ async function globalSetup(_config: FullConfig) {
     }
 
     const browser = await chromium.launch();
+    const context = await browser.newContext();
+    const page = await context.newPage();
 
-    for (const persona of personas) {
-        const context = await browser.newContext();
-        const page = await context.newPage();
+    // Generate a unique email for this run
+    const email = `tester+${Date.now()}@antigravity.dev`;
+    const password = envConfig.USER_PASSWORD;
+    const name = envConfig.USER_NAME;
 
-        try {
-            await page.goto(envConfig.BASE_URL + '/loginpagePractise/');
+    try {
+        // ── Step 1: Navigate to login page ──────────────────────────────────
+        await page.goto(`${envConfig.BASE_URL}/login`);
 
-            // Fill username and password
-            await page.locator('#username').fill(persona.username);
-            await page.locator('#password').fill(persona.password);
+        // ── Step 2: Fill signup form (name + email) ──────────────────────────
+        await page.locator('[data-qa="signup-name"]').fill(name);
+        await page.locator('[data-qa="signup-email"]').fill(email);
+        await page.locator('[data-qa="signup-button"]').click();
 
-            // Check the terms checkbox (critical step!)
-            await page.locator('#terms').check();
+        // ── Step 3: Fill account info form ───────────────────────────────────
+        await page.locator('#id_gender1').check();                              // Title: Mr
+        await page.locator('[data-qa="password"]').fill(password);
+        await page.locator('[data-qa="days"]').selectOption('15');
+        await page.locator('[data-qa="months"]').selectOption('June');
+        await page.locator('[data-qa="years"]').selectOption('1990');
+        await page.locator('#newsletter').check();
+        await page.locator('#optin').check();
+        await page.locator('[data-qa="first_name"]').fill('Antigravity');
+        await page.locator('[data-qa="last_name"]').fill('Tester');
+        await page.locator('[data-qa="company"]').fill('Antigravity QA');
+        await page.locator('[data-qa="address"]').fill('123 Test Street');
+        await page.locator('[data-qa="address2"]').fill('Suite 456');
+        await page.locator('[data-qa="country"]').selectOption('India');
+        await page.locator('[data-qa="state"]').fill('Maharashtra');
+        await page.locator('[data-qa="city"]').fill('Mumbai');
+        await page.locator('[data-qa="zipcode"]').fill('400001');
+        await page.locator('[data-qa="mobile_number"]').fill('9876543210');
+        await page.locator('[data-qa="create-account"]').click();
 
-            // Click the Sign In button
-            await page.locator('#signInBtn').click();
+        // ── Step 4: Confirm account created ──────────────────────────────────
+        await page.waitForSelector('[data-qa="account-created"]', { timeout: 10000 });
+        await page.locator('[data-qa="continue-button"]').click();
 
-            // Wait for navigation to the shop page
-            // Note: The practice site sometimes redirects via JS, so waitForURL is key
-            try {
-                await page.waitForURL('**/angularpractice/shop', { timeout: 5000 });
-            } catch (e) {
-                console.warn(`Global setup: Login redirect to shop failed or timed out. Current URL: ${page.url()}`);
-            }
+        // ── Step 5: Verify logged in ──────────────────────────────────────────
+        await page.waitForSelector('a:has-text("Logged in as")', { timeout: 8000 });
+        console.log(`✓ Global setup: Registered and logged in as ${email}`);
 
-            await context.storageState({ path: persona.statePath });
-            // console.log(`✓ Authenticated persona: ${persona.username}`); // Logging handled by console.warn if failed, or success implied.
-        } catch (error) {
-            console.warn(
-                `⚠ Global setup: Could not authenticate persona "${persona.username}". ` +
-                `Tests requiring this role may fail. Error: ${(error as Error).message}\n` +
-                `Current URL: ${page.url()}`
-            );
-        } finally {
-            await context.close();
-        }
+        // ── Step 6: Save storageState + credentials ───────────────────────────
+        await context.storageState({ path: STATE_PATH });
+        fs.writeFileSync(CREDENTIALS_PATH, JSON.stringify({ email, password, name }, null, 2));
+        console.log(`✓ Global setup: Saved auth state → ${STATE_PATH}`);
+        console.log(`✓ Global setup: Saved credentials → ${CREDENTIALS_PATH}`);
+
+    } catch (error) {
+        console.error(
+            `✗ Global setup: Registration failed. Error: ${(error as Error).message}\n` +
+            `  Current URL: ${page.url()}`
+        );
+        // Write empty state so files always exist and tests can fail gracefully
+        fs.writeFileSync(STATE_PATH, JSON.stringify({ cookies: [], origins: [] }));
+        fs.writeFileSync(CREDENTIALS_PATH, JSON.stringify({ email, password, name }, null, 2));
+    } finally {
+        await context.close();
+        await browser.close();
     }
-
-    await browser.close();
 }
 
 export default globalSetup;
