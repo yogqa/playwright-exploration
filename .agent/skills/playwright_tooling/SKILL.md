@@ -45,11 +45,55 @@ This project provides **three** primary interfaces for interacting with Playwrig
 > ⚠️ **The `--` separator is required** when passing arguments through npm scripts. Without it, npm swallows the args.
 
 ### Capabilities
+
+#### Navigation & Interaction
 - **Open Page**: `npm run agent-cli -- open https://example.com`
 - **Navigate**: `npm run agent-cli:auth -- goto /angularpractice/shop`
 - **Click**: `npm run agent-cli -- click "text=Login"`
 - **Type**: `npm run agent-cli -- fill "#username" "admin"`
 - **Inspect**: `npm run agent-cli -- snapshot` (Returns element refs without massive DOM dumps).
+
+#### 🎬 Video Recording
+Record a full video of a browser session for debugging or documentation:
+```bash
+# Start recording
+npm run agent-cli -- video-start
+
+# ... perform actions (open, click, fill, snapshot) ...
+
+# Stop and save the video
+npm run agent-cli -- video-stop
+# → Saves to .playwright-cli/video-*.webm
+
+# Open the recorded video to review it
+npm run agent-cli -- video-open
+```
+
+#### 🔍 Tracing
+Capture a full Playwright trace (timeline, screenshots, network, console) for deep debugging:
+```bash
+# Start tracing
+npm run agent-cli -- tracing-start
+
+# ... perform actions ...
+
+# Stop and save the trace
+npm run agent-cli -- tracing-stop
+# → Saves to .playwright-cli/traces/*.trace
+
+# Open the Playwright Trace Viewer
+npm run agent-cli -- tracing-open
+```
+The trace viewer shows: timeline of all actions, before/after screenshots, console logs, network requests, and element locators used.
+
+#### 📊 Visual Dashboard
+When running multiple browser sessions simultaneously, use the dashboard for a bird's-eye view:
+```bash
+npm run agent-cli -- dashboard
+```
+- See live previews of every active browser session
+- Click into any session to watch it full-size
+- Take over mouse/keyboard control if needed, then press `Escape` to hand back to the agent
 
 ### Why use this over MCP?
 - **Stateless & Concise**: Commands are atomic (`click`, `fill`).
@@ -60,6 +104,8 @@ This project provides **three** primary interfaces for interacting with Playwrig
 - **New Feature Exploration**: "Go to the new page and tell me what buttons are there."
 - **Visual Debugging**: "Open the failed URL and click the button to see if it works."
 - **Ad-hoc Tasks**: "Log in and check the dashboard title."
+- **Recording Evidence**: "Record a video of the checkout flow for the bug report."
+- **Deep Debugging**: "Capture a trace of the failing interaction so I can inspect network calls."
 
 ---
 
@@ -92,6 +138,9 @@ Both configs launch Playwright MCP with **Chromium + headless + admin storageSta
 | **"Debug a failure"** | ✅ **Standard CLI** (logs) → **Agentic CLI** (interact) | `npm test` → `npm run agent-cli:auth -- goto <url>` |
 | **"Explore a public URL"** | ✅ **Agentic CLI** | `npm run agent-cli -- open <url>` |
 | **"Explore an authenticated page"** | ✅ **Agentic CLI (auth)** | `npm run agent-cli:auth -- open <url>` |
+| **"Record a video of a flow"** | ✅ **Agentic CLI** | `npm run agent-cli -- video-start` → actions → `video-stop` |
+| **"Capture a trace for debugging"** | ✅ **Agentic CLI** | `npm run agent-cli -- tracing-start` → actions → `tracing-stop` |
+| **"Monitor multiple sessions"** | ✅ **Agentic CLI** | `npm run agent-cli -- dashboard` |
 | **"Connect Claude Desktop"** | ✅ **MCP Protocol** | `npm run mcp` |
 
 ### 🛑 Anti-Pattern

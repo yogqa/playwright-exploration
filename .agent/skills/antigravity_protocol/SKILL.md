@@ -66,6 +66,21 @@ If the test's purpose is NOT to test login, use API-based setup or storageState 
 
 ---
 
+### 🔒 6. Security Law
+> **All AI-generated output MUST be validated before use in the framework.**
+
+When GenAI produces test data, selectors, or JSON payloads, always pass them through the `src/core/security/ai-guard.ts` guards before use:
+
+| Guard | Use When |
+|---|---|
+| `validateAiOutput(schema, raw)` | AI returns JSON — validate shape with Zod before consuming |
+| `assertNoInjection(value)` | AI returns a string used as form input, search term, or test data |
+| `assertSafeSelector(selector)` | AI suggests a CSS/locator string — check before passing to `page.locator()` |
+
+**Enforcement:** Code review + agent workflow guidance.
+
+---
+
 ## Definition of Done (for every change)
 
 - [ ] `npx tsc --noEmit` exits 0
@@ -94,6 +109,9 @@ If the test's purpose is NOT to test login, use API-based setup or storageState 
 | Multiple assertions | `await expect.soft(locator).toBeVisible()` **(continue on failure)** |
 | Poll async state | `await expect.poll(() => fn(), { timeout: 5000 }).toBe(value)` **(no hard waits)** |
 | API call in test | `const res = await apiContext.get('/endpoint')` **(via fixture)** |
+| Validate AI JSON | `validateAiOutput(MySchema, aiJson, 'context')` **(in any layer)** |
+| Scan AI text | `assertNoInjection(aiText, 'context')` **(before fill/search)** |
+| Scan AI selector | `assertSafeSelector(aiSelector)` **(before locator use)** |
 
 ---
 
@@ -152,3 +170,20 @@ const data = ProductSchema.parse(await res.json()); // throws if shape is wrong
 expect(data.name).toBe('Brocolli');
 ```
 
+### AI Output Security (all layers — when using GenAI)
+```typescript
+import { validateAiOutput, assertNoInjection, assertSafeSelector } from '../core/security/ai-guard';
+import { z } from 'zod';
+
+// 1. Validate AI-generated JSON against a Zod schema
+const ProductSchema = z.object({ name: z.string(), price: z.number() });
+const safeProduct = validateAiOutput(ProductSchema, aiGeneratedJson, 'product data');
+
+// 2. Scan AI-generated text before using as form input
+assertNoInjection(aiGeneratedSearchTerm, 'product search');
+await this.action.fill(this.searchInput, aiGeneratedSearchTerm);
+
+// 3. Validate AI-suggested selectors before use
+assertSafeSelector(aiGeneratedSelector);
+const locator = this.page.locator(aiGeneratedSelector);
+```
