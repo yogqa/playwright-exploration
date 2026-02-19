@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "Antigravity Test Automation Framework — AI-embedded Playwright + TypeScript",
   "scripts": {
-    "test": "npx playwright test --project=chromium",
-    "test:headed": "npx playwright test --project=chromium --headed",
-    "test:debug": "npx playwright test --project=chromium --debug",
+    "test": "npx playwright test",
+    "test:headed": "npx playwright test --headed",
+    "test:debug": "npx playwright test --debug",
     "test:ui": "npx playwright test --ui",
     "lint": "eslint src/ --ext .ts",
     "lint:fix": "eslint src/ --ext .ts --fix",

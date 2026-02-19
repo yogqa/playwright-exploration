@@ -63,7 +63,7 @@ export const test = base.extend<AntigravityFixtures>({
      * Provides a pre-configured APIRequestContext for API-based setup/teardown.
      * Auto-disposes after each test to prevent connection leaks.
      */
-    apiContext: async ({ }, use) => {
+    apiContext: async (_, use) => {
         const ctx = await request.newContext({
             baseURL: envConfig.BASE_URL,
             extraHTTPHeaders: {
