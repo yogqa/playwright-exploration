@@ -9,6 +9,19 @@ This document serves as the **system instructions** for any AI agent (or human d
 
 ---
 
+## 🎯 AI Orchestrator — Start Here
+
+> **Before editing any file, read `.agent/rules/orchestrator.md`.**
+>
+> The orchestrator routes you to the correct specialist based on what you're editing:
+> - Editing `src/pages/**` or `src/tests/app/**` → load **`ui-specialist.md`**
+> - Editing `src/tests/api/**`, `schemas/**`, `api-clients/**` → load **`api-specialist.md`**
+> - Editing `playwright.config.ts`, `.github/**`, `global-setup.ts` → load **`ci-config-specialist.md`**
+>
+> Always load **`constitution.md`** first — these GM rules cannot be overridden.
+
+---
+
 ## Architecture: 3-Layer Separation of Concerns
 
 ```

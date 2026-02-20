@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Antigravity Test Automation Framework — AI-embedded Playwright + TypeScript",
   "scripts": {
+    "pretest": "node scripts/clean-reports.js",
     "test": "npx playwright test",
     "test:headed": "npx playwright test --headed",
     "test:debug": "npx playwright test --debug",

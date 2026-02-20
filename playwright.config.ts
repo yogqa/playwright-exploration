@@ -8,9 +8,14 @@ dotenv.config();
  * Target: https://automationexercise.com
  *
  * Projects:
- *   chromium  → src/tests/app/     (pre-authenticated via auth/user.json)
- *   no-auth   → src/tests/no-auth/ (fresh browser — register/login/contact-us flows)
- *   security  → src/tests/         (ai-guard.spec.ts — no auth needed)
+ *   app       → src/tests/app/      (pre-authenticated via auth/user.json)
+ *   no-auth   → src/tests/no-auth/  (fresh browser — register/login/contact-us flows)
+ *   api       → src/tests/api/      (Zod-validated API contract tests)
+ *   security  → src/tests/          (ai-guard.spec.ts — no auth needed)
+ *
+ * AI Orchestrator Rules:
+ *   Always read: .agent/rules/orchestrator.md (routes to specialist)
+ *   CI/Config specialist: .agent/rules/ci-config-specialist.md
  */
 export default defineConfig({
   /* Global setup registers a fresh user and saves auth/user.json */
@@ -26,9 +31,13 @@ export default defineConfig({
   /* Serial execution — app/ tests share one logged-in user, parallel runs corrupt cart state */
   workers: 1,
 
+  /* Consolidated output directory for Playwright artifacts (traces, videos, screenshots) */
+  outputDir: 'test-results',
+
   /* Reporter: list for console + Allure for rich HTML dashboard */
   reporter: [
     ['list'],
+    ['html', { open: 'never', outputFolder: 'html-report' }],
     ['allure-playwright'],
   ],
 
@@ -42,9 +51,11 @@ export default defineConfig({
 
   projects: [
     /**
-     * App project — authenticated tests.
+     * App project — authenticated UI tests.
      * global-setup registers a user and saves storageState → auth/user.json.
      * Every test in app/ starts already logged in.
+     *
+     * AI Orchestrator: Load ui-specialist.md when editing these tests.
      */
     {
       name: 'app',
@@ -58,10 +69,27 @@ export default defineConfig({
     /**
      * No-auth project — tests that must start unauthenticated.
      * Registration, login flows, contact us, checkout-with-register.
+     *
+     * AI Orchestrator: Load ui-specialist.md when editing these tests.
      */
     {
       name: 'no-auth',
       testDir: './src/tests/no-auth',
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
+
+    /**
+     * API project — Zod-validated API contract tests.
+     * No browser state needed. Tests follow the mandatory 3-step flow:
+     *   call client → validate schema → business assertions.
+     *
+     * AI Orchestrator: Load api-specialist.md when editing these tests.
+     */
+    {
+      name: 'api',
+      testDir: './src/tests/api',
       use: {
         ...devices['Desktop Chrome'],
       },
@@ -80,4 +108,3 @@ export default defineConfig({
     },
   ],
 });
-

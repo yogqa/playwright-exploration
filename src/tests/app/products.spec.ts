@@ -1,4 +1,6 @@
 import { test, expect } from '../../fixtures/test.fixture';
+import { validateSchema } from '../../utils/schema-validator';
+import { ProductListResponseSchema } from '../schemas/product.schema';
 
 /**
  * Layer 3 — Products Specs  [app project — pre-authenticated]
@@ -92,4 +94,51 @@ test.describe('Products', () => {
         const successMsg = await productDetailPage.getReviewSuccessMessage();
         expect(successMsg).toContain('Thank you for your review');
     });
+});
+
+/**
+ * Hybrid Tests — UI action + API contract verification (Zod-validated)
+ * Demonstrates Law #5 (Hybrid Law): UI success alone is not sufficient.
+ * After a UI action, verify backend state via a Zod-validated API call.
+ *
+ * AI Orchestrator: When editing this block, load BOTH:
+ *   - ui-specialist.md  (for the UI productsPage actions)
+ *   - api-specialist.md (for the Zod schema validation step)
+ */
+test.describe('Products — Hybrid UI + API Verification', () => {
+
+    // ─── TC-H1: UI search results are backed by a valid API contract ──────────
+    test('TC-H1: UI search matches Zod-validated API response', async ({
+        productsPage,
+        productsApi,
+    }) => {
+        const SEARCH_QUERY = 'Top';
+
+        // ── UI action ─────────────────────────────────────────────────────────
+        await productsPage.navigateTo();
+        await productsPage.searchProduct(SEARCH_QUERY);
+
+        const uiProductCount = await productsPage.getProductCount();
+        expect(uiProductCount).toBeGreaterThan(0);
+
+        // ── API verification (3-step Zod-first flow) ──────────────────────────
+
+        // Step 1: Call API client (raw transport)
+        const rawData = await productsApi.searchProduct(SEARCH_QUERY);
+
+        // Step 2: Validate schema — fails immediately if API contract changes
+        const validated = validateSchema(
+            ProductListResponseSchema,
+            rawData,
+            `POST /api/searchProduct?query=${SEARCH_QUERY}`,
+        );
+
+        // Step 3: Business assertions on validated data
+        expect(validated.responseCode).toBe(200);
+        expect(validated.products.length).toBeGreaterThan(0);
+
+        // Cross-reference: UI count should not exceed what the API returns
+        expect(uiProductCount).toBeLessThanOrEqual(validated.products.length);
+    });
+
 });

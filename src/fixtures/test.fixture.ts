@@ -7,13 +7,21 @@ import { CartPage } from '../pages/cart.page';
 import { CheckoutPage } from '../pages/checkout.page';
 import { PaymentPage } from '../pages/payment.page';
 import { ContactUsPage } from '../pages/contact-us.page';
+import { ProductsApiClient } from '../tests/api-clients/products.client';
+import { UserApiClient } from '../tests/api-clients/user.client';
 import { envConfig } from '../config/env.config';
 
 /**
- * Custom Playwright fixture that auto-injects Page Objects into tests.
- * Tests destructure the POMs they need — no manual instantiation.
+ * Custom Playwright fixture that auto-injects Page Objects and API clients into tests.
+ * Tests destructure only the fixtures they need — no manual instantiation.
+ *
+ * Layer architecture:
+ *   UI fixtures     → inject Page Objects (src/pages/)
+ *   API fixtures    → inject domain API clients (src/tests/api-clients/)
+ *   apiContext      → raw APIRequestContext for ad-hoc API calls
  */
 type AntigravityFixtures = {
+    // ── UI Layer (Page Objects) ───────────────────────────────────────────────
     homePage: HomePage;
     authPage: AuthPage;
     productsPage: ProductsPage;
@@ -22,10 +30,19 @@ type AntigravityFixtures = {
     checkoutPage: CheckoutPage;
     paymentPage: PaymentPage;
     contactUsPage: ContactUsPage;
+
+    // ── Core API Context ──────────────────────────────────────────────────────
     apiContext: APIRequestContext;
+
+    // ── API Layer (Domain Clients) ────────────────────────────────────────────
+    productsApi: ProductsApiClient;
+    userApi: UserApiClient;
 };
 
 export const test = base.extend<AntigravityFixtures>({
+
+    // ── UI Fixtures ───────────────────────────────────────────────────────────
+
     homePage: async ({ page }, use) => {
         await use(new HomePage(page));
     },
@@ -58,9 +75,12 @@ export const test = base.extend<AntigravityFixtures>({
         await use(new ContactUsPage(page));
     },
 
+    // ── Core API Context ──────────────────────────────────────────────────────
+
     /**
-     * API Context Factory — Law #5 (Hybrid Law)
-     * Provides a pre-configured APIRequestContext for API-based setup/teardown.
+     * Raw APIRequestContext — Law #5 (Hybrid Law)
+     * Pre-configured with baseURL and optional Authorization header.
+     * Used as the injection point for domain API clients below.
      * Auto-disposes after each test to prevent connection leaks.
      */
     // eslint-disable-next-line no-empty-pattern
@@ -73,6 +93,24 @@ export const test = base.extend<AntigravityFixtures>({
         });
         await use(ctx);
         await ctx.dispose();
+    },
+
+    // ── API Domain Client Fixtures ────────────────────────────────────────────
+
+    /**
+     * Products API client — transport only, no Zod, no assertions.
+     * Validate responses with validateSchema() in the test spec.
+     */
+    productsApi: async ({ apiContext }, use) => {
+        await use(new ProductsApiClient(apiContext));
+    },
+
+    /**
+     * User API client — transport only, no Zod, no assertions.
+     * Validate responses with validateSchema() in the test spec.
+     */
+    userApi: async ({ apiContext }, use) => {
+        await use(new UserApiClient(apiContext));
     },
 });
 
