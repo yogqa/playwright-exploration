@@ -18,7 +18,7 @@ test.describe('Contact Us', () => {
         const formData = UserData.contactForm();
         await contactUsPage.fillContactForm(formData);
 
-        const dummyFile = path.resolve('c:/coding projects/playwright-exploration/.env.example');
+        const dummyFile = path.resolve(process.cwd(), '.env.example');
         await contactUsPage.uploadFile(dummyFile);
 
         await contactUsPage.submit();

@@ -89,8 +89,10 @@ export class ProductsPage extends BasePage {
         // Scope sub-category to the parent's own panel to avoid strict mode violations
         // when the same name (e.g. "Dress") exists under multiple categories
         const parentPanel = this.page.locator(`#${parent}`);
+        const subCategoryLink = parentPanel.locator(`a:has-text("${subCategory}")`).first();
+        await subCategoryLink.waitFor({ state: 'visible', timeout: 5000 });
         await this.action.click(
-            parentPanel.locator(`a:has-text("${subCategory}")`).first(),
+            subCategoryLink,
             { description: `Sub-category: ${subCategory}` }
         );
     }

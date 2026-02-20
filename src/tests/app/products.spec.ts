@@ -55,8 +55,8 @@ test.describe('Products', () => {
     });
 
     // ─── TC18: View Category Products ────────────────────────────────────────
-    test('TC18: View Category Products', async ({ page, productsPage }) => {
-        await page.goto('/');
+    test('TC18: View Category Products', async ({ page, homePage, productsPage }) => {
+        await homePage.navigateTo();
 
         await productsPage.clickCategory('Women', 'Dress');
         await expect(page.locator('.features_items h2.title')).toBeVisible();
