@@ -13,7 +13,7 @@ export class NavigationActions {
         const url = `${envConfig.BASE_URL}${path}`;
         logger.info(`NAV     ▸ goto   → ${url}`);
         try {
-            await this.page.goto(url, { timeout: TIMEOUTS.ACTION, waitUntil: 'domcontentloaded' });
+            await this.page.goto(url, { timeout: TIMEOUTS.NAVIGATION, waitUntil: 'domcontentloaded' });
         } catch (error) {
             logger.error(`FAILED  ▸ goto   → ${url} | Error: ${(error as Error).message}`);
             throw error;
@@ -26,7 +26,7 @@ export class NavigationActions {
     async reload(): Promise<void> {
         logger.info(`NAV     ▸ reload → ${this.page.url()}`);
         try {
-            await this.page.reload({ timeout: TIMEOUTS.ACTION, waitUntil: 'domcontentloaded' });
+            await this.page.reload({ timeout: TIMEOUTS.NAVIGATION, waitUntil: 'domcontentloaded' });
         } catch (error) {
             logger.error(`FAILED  ▸ reload | Error: ${(error as Error).message}`);
             throw error;
@@ -39,7 +39,7 @@ export class NavigationActions {
     async waitForURL(urlPattern: string | RegExp): Promise<void> {
         logger.info(`NAV     ▸ waitForURL → ${urlPattern}`);
         try {
-            await this.page.waitForURL(urlPattern, { timeout: TIMEOUTS.ACTION });
+            await this.page.waitForURL(urlPattern, { timeout: TIMEOUTS.NAVIGATION });
         } catch (error) {
             logger.error(`FAILED  ▸ waitForURL → ${urlPattern} | Error: ${(error as Error).message}`);
             throw error;

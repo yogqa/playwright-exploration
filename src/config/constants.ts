@@ -5,6 +5,8 @@ export const TIMEOUTS = {
     ACTION: 10 * 1000,
     /** Default explicit wait timeout (10s) */
     WAIT: 10 * 1000,
+    /** Default timeout for navigation / page load (30s) */
+    NAVIGATION: 30 * 1000,
     /** API request timeout (15s) */
     API: 15 * 1000,
 };
