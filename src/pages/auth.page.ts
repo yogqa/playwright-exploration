@@ -13,47 +13,49 @@ export class AuthPage extends BasePage {
     // ─── Locators ────────────────────────────────────────────────────────────
 
     // Login form
-    private get loginEmailInput() { return this.page.locator('[data-qa="login-email"]'); }
-    private get loginPasswordInput() { return this.page.locator('[data-qa="login-password"]'); }
-    private get loginButton() { return this.page.locator('[data-qa="login-button"]'); }
-    private get loginErrorMsg() { return this.page.locator('p:has-text("Your email or password is incorrect!")'); }
+    private get loginEmailInput() { return this.page.getByTestId('login-email'); }
+    private get loginPasswordInput() { return this.page.getByTestId('login-password'); }
+    private get loginButton() { return this.page.getByRole('button', { name: 'Login' }); }
+    private get loginErrorMsg() { return this.page.getByText('Your email or password is incorrect!'); }
 
     // Signup form (step 1 — name + email)
-    private get signupNameInput() { return this.page.locator('[data-qa="signup-name"]'); }
-    private get signupEmailInput() { return this.page.locator('[data-qa="signup-email"]'); }
-    private get signupButton() { return this.page.locator('[data-qa="signup-button"]'); }
-    private get signupErrorMsg() { return this.page.locator('p:has-text("Email Address already exist!")'); }
+    private get signupNameInput() { return this.page.getByTestId('signup-name'); }
+    private get signupEmailInput() { return this.page.getByTestId('signup-email'); }
+    private get signupButton() { return this.page.getByRole('button', { name: 'Signup' }); }
+    private get signupErrorMsg() { return this.page.getByText('Email Address already exist!'); }
 
     // Registration form (step 2 — account info)
-    private get titleMrRadio() { return this.page.locator('#id_gender1'); }
-    private get titleMrsRadio() { return this.page.locator('#id_gender2'); }
-    private get passwordInput() { return this.page.locator('[data-qa="password"]'); }
-    private get dobDaySelect() { return this.page.locator('[data-qa="days"]'); }
-    private get dobMonthSelect() { return this.page.locator('[data-qa="months"]'); }
-    private get dobYearSelect() { return this.page.locator('[data-qa="years"]'); }
-    private get newsletterCheckbox() { return this.page.locator('#newsletter'); }
-    private get offersCheckbox() { return this.page.locator('#optin'); }
-    private get firstNameInput() { return this.page.locator('[data-qa="first_name"]'); }
-    private get lastNameInput() { return this.page.locator('[data-qa="last_name"]'); }
-    private get companyInput() { return this.page.locator('[data-qa="company"]'); }
-    private get address1Input() { return this.page.locator('[data-qa="address"]'); }
-    private get address2Input() { return this.page.locator('[data-qa="address2"]'); }
-    private get countrySelect() { return this.page.locator('[data-qa="country"]'); }
-    private get stateInput() { return this.page.locator('[data-qa="state"]'); }
-    private get cityInput() { return this.page.locator('[data-qa="city"]'); }
-    private get zipcodeInput() { return this.page.locator('[data-qa="zipcode"]'); }
-    private get mobileInput() { return this.page.locator('[data-qa="mobile_number"]'); }
-    private get createAccountButton() { return this.page.locator('[data-qa="create-account"]'); }
+    // Radio inputs are selected via their visible label text using getByRole
+    private get titleMrRadio() { return this.page.getByRole('radio', { name: 'Mr.' }); }
+    private get titleMrsRadio() { return this.page.getByRole('radio', { name: 'Mrs.' }); }
+    private get passwordInput() { return this.page.getByTestId('password'); }
+    private get dobDaySelect() { return this.page.getByTestId('days'); }
+    private get dobMonthSelect() { return this.page.getByTestId('months'); }
+    private get dobYearSelect() { return this.page.getByTestId('years'); }
+    // Checkboxes use getByLabel — the visible label text is the accessible name
+    private get newsletterCheckbox() { return this.page.getByRole('checkbox', { name: /newsletter/i }); }
+    private get offersCheckbox() { return this.page.getByRole('checkbox', { name: /offers/i }); }
+    private get firstNameInput() { return this.page.getByTestId('first_name'); }
+    private get lastNameInput() { return this.page.getByTestId('last_name'); }
+    private get companyInput() { return this.page.getByTestId('company'); }
+    private get address1Input() { return this.page.getByTestId('address'); }
+    private get address2Input() { return this.page.getByTestId('address2'); }
+    private get countrySelect() { return this.page.getByTestId('country'); }
+    private get stateInput() { return this.page.getByTestId('state'); }
+    private get cityInput() { return this.page.getByTestId('city'); }
+    private get zipcodeInput() { return this.page.getByTestId('zipcode'); }
+    private get mobileInput() { return this.page.getByTestId('mobile_number'); }
+    private get createAccountButton() { return this.page.getByRole('button', { name: 'Create Account' }); }
 
     // Confirmation headings
-    private get accountCreatedHeading() { return this.page.locator('[data-qa="account-created"]'); }
-    private get accountDeletedHeading() { return this.page.locator('[data-qa="account-deleted"]'); }
-    private get continueButton() { return this.page.locator('[data-qa="continue-button"]'); }
+    private get accountCreatedHeading() { return this.page.getByText('Account Created!'); }
+    private get accountDeletedHeading() { return this.page.getByText('Account Deleted!'); }
+    private get continueButton() { return this.page.getByRole('link', { name: 'Continue' }); }
 
     // Navbar elements (post-login)
-    private get loggedInAsLink() { return this.page.locator('a:has-text("Logged in as")'); }
-    private get logoutLink() { return this.page.locator('a[href="/logout"]'); }
-    private get deleteAccountLink() { return this.page.locator('a[href="/delete_account"]'); }
+    private get loggedInAsLink() { return this.page.getByText('Logged in as'); }
+    private get logoutLink() { return this.page.getByRole('link', { name: 'Logout' }); }
+    private get deleteAccountLink() { return this.page.getByRole('link', { name: 'Delete Account' }); }
 
     // ─── Methods ─────────────────────────────────────────────────────────────
 
@@ -140,6 +142,6 @@ export class AuthPage extends BasePage {
     }
 
     async isOnLoginPage(): Promise<boolean> {
-        return this.page.locator('h2:has-text("Login to your account")').isVisible();
+        return this.page.getByRole('heading', { name: 'Login to your account' }).isVisible();
     }
 }

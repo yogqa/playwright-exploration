@@ -11,12 +11,16 @@ export class CheckoutPage extends BasePage {
 
     // ─── Locators ────────────────────────────────────────────────────────────
 
+    // Fallback: #address_delivery is the server-rendered ID for the delivery address block; no testid available
     private get deliveryAddressBlock() { return this.page.locator('#address_delivery'); }
+    // Fallback: #address_invoice is the server-rendered ID for the billing address block; no testid available
     private get billingAddressBlock() { return this.page.locator('#address_invoice'); }
-    private get orderReviewRows() { return this.page.locator('#cart_info tbody tr'); }
+    // Fallback: #cart_info tbody — scoped table with no testid; getByRole('row') makes children accessible
+    private get orderReviewRows() { return this.page.locator('#cart_info tbody').getByRole('row'); }
+    // Fallback: textarea[name="message"] — DOM confirms no placeholder and no label; name attr is the only stable selector
     private get commentTextarea() { return this.page.locator('textarea[name="message"]'); }
-    private get placeOrderBtn() { return this.page.locator('a:has-text("Place Order")'); }
-    private get registerLoginLink() { return this.page.locator('a:has-text("Register / Login")'); }
+    private get placeOrderBtn() { return this.page.getByRole('link', { name: 'Place Order' }); }
+    private get registerLoginLink() { return this.page.getByRole('link', { name: 'Register / Login' }); }
 
     // ─── Methods ─────────────────────────────────────────────────────────────
 

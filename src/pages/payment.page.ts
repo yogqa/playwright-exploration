@@ -12,15 +12,15 @@ export class PaymentPage extends BasePage {
 
     // ─── Locators ────────────────────────────────────────────────────────────
 
-    private get nameOnCardInput() { return this.page.locator('[data-qa="name-on-card"]'); }
-    private get cardNumberInput() { return this.page.locator('[data-qa="card-number"]'); }
-    private get cvcInput() { return this.page.locator('[data-qa="cvc"]'); }
-    private get expiryMonthInput() { return this.page.locator('[data-qa="expiry-month"]'); }
-    private get expiryYearInput() { return this.page.locator('[data-qa="expiry-year"]'); }
-    private get payConfirmBtn() { return this.page.locator('[data-qa="pay-button"]'); }
-    private get orderSuccessMsg() { return this.page.locator('[data-qa="order-placed"]'); }
-    private get downloadInvoiceBtn() { return this.page.locator('a:has-text("Download Invoice")'); }
-    private get continueBtn() { return this.page.locator('[data-qa="continue-button"]'); }
+    private get nameOnCardInput() { return this.page.getByTestId('name-on-card'); }
+    private get cardNumberInput() { return this.page.getByTestId('card-number'); }
+    private get cvcInput() { return this.page.getByTestId('cvc'); }
+    private get expiryMonthInput() { return this.page.getByTestId('expiry-month'); }
+    private get expiryYearInput() { return this.page.getByTestId('expiry-year'); }
+    private get payConfirmBtn() { return this.page.getByRole('button', { name: 'Pay and Confirm Order' }); }
+    private get orderSuccessMsg() { return this.page.getByTestId('order-placed'); }
+    private get downloadInvoiceBtn() { return this.page.getByRole('link', { name: 'Download Invoice' }); }
+    private get continueBtn() { return this.page.getByTestId('continue-button'); }
 
     // ─── Methods ─────────────────────────────────────────────────────────────
 

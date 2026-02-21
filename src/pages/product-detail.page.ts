@@ -11,21 +11,28 @@ export class ProductDetailPage extends BasePage {
 
     // ─── Locators ────────────────────────────────────────────────────────────
 
-    private get productName() { return this.page.locator('.product-information h2'); }
+    // Fallback: scoped to .product-information to avoid collision with other headings on the page
+    private get productName() { return this.page.locator('.product-information').getByRole('heading'); }
+    // Fallback: .product-information p scoped with filter — no testid on metadata paragraphs
     private get productCategory() { return this.page.locator('.product-information p').filter({ hasText: 'Category' }); }
+    // Fallback: .product-information span span — the price is rendered in nested spans with no testid;
+    // scoped to .product-information to avoid matching other prices on the page
     private get productPrice() { return this.page.locator('.product-information span span'); }
     private get productAvailability() { return this.page.locator('.product-information p').filter({ hasText: 'Availability' }); }
     private get productCondition() { return this.page.locator('.product-information p').filter({ hasText: 'Condition' }); }
     private get productBrand() { return this.page.locator('.product-information p').filter({ hasText: 'Brand' }); }
-    private get quantityInput() { return this.page.locator('#quantity'); }
-    private get addToCartButton() { return this.page.locator('button:has-text("Add to cart")'); }
-    private get viewCartModalBtn() { return this.page.locator('u:has-text("View Cart")'); }
+    // Prefer getByRole('spinbutton') — quantity fields are numeric inputs with role=spinbutton
+    private get quantityInput() { return this.page.getByRole('spinbutton'); }
+    private get addToCartButton() { return this.page.getByRole('button', { name: 'Add to cart' }); }
+    private get viewCartModalBtn() { return this.page.getByRole('link', { name: 'View Cart' }); }
 
-    // Review form
-    private get reviewNameInput() { return this.page.locator('#name'); }
-    private get reviewEmailInput() { return this.page.locator('#email'); }
-    private get reviewTextarea() { return this.page.locator('#review'); }
-    private get submitReviewButton() { return this.page.locator('#button-review'); }
+    // Review form — use getByPlaceholder as the fields lack associated <label> elements
+    // exact:true on email prevents partial match with the footer subscription input 'Your email address'
+    private get reviewNameInput() { return this.page.getByPlaceholder('Your Name'); }
+    private get reviewEmailInput() { return this.page.getByPlaceholder('Email Address', { exact: true }); }
+    private get reviewTextarea() { return this.page.getByPlaceholder('Add Review Here!'); }
+    private get submitReviewButton() { return this.page.getByRole('button', { name: 'Submit' }); }
+    // Fallback: .alert-success span — dynamic success message with no testid or stable role
     private get reviewSuccessMsg() { return this.page.locator('.alert-success span'); }
 
     // ─── Methods ─────────────────────────────────────────────────────────────

@@ -11,27 +11,34 @@ export class ProductsPage extends BasePage {
 
     // ─── Locators ────────────────────────────────────────────────────────────
 
-    private get allProductsHeading() { return this.page.locator('h2:has-text("All Products")'); }
-    private get searchInput() { return this.page.locator('#search_product'); }
+    private get allProductsHeading() { return this.page.getByRole('heading', { name: 'All Products' }); }
+    // Prefer getByPlaceholder — scopes to the specific search box by its visible placeholder text
+    private get searchInput() { return this.page.getByPlaceholder('Search Product'); }
+    // Fallback: #submit_search is an icon-only search button with no accessible name or label
     private get searchButton() { return this.page.locator('#submit_search'); }
-    private get searchedProductsHeading() { return this.page.locator('h2:has-text("Searched Products")'); }
+    private get searchedProductsHeading() { return this.page.getByRole('heading', { name: 'Searched Products' }); }
+    // Fallback: .productinfo is the only structural class wrapping each product card; no testid on the app
     private get productCards() { return this.page.locator('.productinfo'); }
+    // Fallback: href-based selector — these links have no shared accessible name to distinguish them
     private get viewProductLinks() { return this.page.locator('a[href*="/product_details/"]'); }
 
     // Add to cart overlay (appears on hover)
+    // Fallback: .product-overlay .add-to-cart — overlay buttons have no accessible name or testid;
+    // scoped to .product-overlay to avoid matching other "Add to cart" buttons on the page
     private get addToCartOverlayBtns() { return this.page.locator('.product-overlay .add-to-cart'); }
 
     // Modal buttons after adding to cart
-    private get continueShoppingBtn() { return this.page.locator('button:has-text("Continue Shopping")'); }
-    private get viewCartModalBtn() { return this.page.locator('u:has-text("View Cart")'); }
+    private get continueShoppingBtn() { return this.page.getByRole('button', { name: 'Continue Shopping' }); }
+    private get viewCartModalBtn() { return this.page.getByRole('link', { name: 'View Cart' }); }
 
-    // Category sidebar
-    private get womenCategory() { return this.page.locator('a[href="#Women"]'); }
-    private get menCategory() { return this.page.locator('a[href="#Men"]'); }
-    private get kidsCategory() { return this.page.locator('a[href="#Kids"]'); }
+    // Category sidebar — use href attr to target accordion triggers uniquely;
+    // getByRole(name) fails because 'men' is a substring of 'women' in the accessible name
+    private get womenCategory() { return this.page.locator('#accordian a[href="#Women"]'); }
+    private get menCategory() { return this.page.locator('#accordian a[href="#Men"]'); }
+    private get kidsCategory() { return this.page.locator('#accordian a[href="#Kids"]'); }
 
     // Brand sidebar
-    private get brandLinks() { return this.page.locator('.brands-name a'); }
+    private get brandLinks() { return this.page.locator('.brands-name').getByRole('link'); }
 
     // ─── Methods ─────────────────────────────────────────────────────────────
 
@@ -89,7 +96,9 @@ export class ProductsPage extends BasePage {
         // Scope sub-category to the parent's own panel to avoid strict mode violations
         // when the same name (e.g. "Dress") exists under multiple categories
         const parentPanel = this.page.locator(`#${parent}`);
-        const subCategoryLink = parentPanel.locator(`a:has-text("${subCategory}")`).first();
+        // Use filter({ hasText }) rather than exact name match — sub-category links have leading icon
+        // characters (e.g. " Tshirts") that cause exact accessible name mismatches
+        const subCategoryLink = parentPanel.getByRole('link').filter({ hasText: subCategory }).first();
         await subCategoryLink.waitFor({ state: 'visible', timeout: 5000 });
         await this.action.click(
             subCategoryLink,
@@ -106,6 +115,7 @@ export class ProductsPage extends BasePage {
 
     async getBrandPageHeading(): Promise<string> {
         return this.action.getText(
+            // Fallback: .features_items h2.title — brand page heading has no testid or unique accessible name
             this.page.locator('.features_items h2.title'),
             { description: 'Brand page heading' }
         );

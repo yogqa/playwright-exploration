@@ -15,9 +15,9 @@
     "typecheck": "tsc --noEmit",
     "allure:generate": "npx allure generate allure-results --clean -o allure-report",
     "allure:open": "npx allure open allure-report",
-    "mcp": "npx -y @playwright/mcp --browser chromium --storage-state ./auth/admin.json",
+    "mcp": "npx -y @playwright/mcp --browser chromium --storage-state ./auth/user.json",
     "agent-cli": "npx -y @playwright/cli --browser chromium",
-    "agent-cli:auth": "npx -y @playwright/cli --browser chromium --storage-state ./auth/admin.json"
+    "agent-cli:auth": "npx -y @playwright/cli --browser chromium --storage-state ./auth/user.json"
   },
   "keywords": [
     "playwright",
