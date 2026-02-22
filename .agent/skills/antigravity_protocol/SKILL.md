@@ -17,6 +17,7 @@ This document serves as the **system instructions** for any AI agent (or human d
 > - Editing `src/pages/**` or `src/tests/app/**` → load **`ui-specialist.md`**
 > - Editing `src/tests/api/**`, `schemas/**`, `api-clients/**` → load **`api-specialist.md`**
 > - Editing `playwright.config.ts`, `.github/**`, `global-setup.ts` → load **`ci-config-specialist.md`**
+> - Editing `src/fixtures/**` → load **`fixture-specialist.md`**
 >
 > Always load **`constitution.md`** first — these GM rules cannot be overridden.
 

@@ -32,7 +32,7 @@ Identify which files you are editing, then load **exactly one** specialist:
 | `src/config/**` | `.agent/rules/ci-config-specialist.md` |
 | `src/core/**` | Load **ALL** specialists (shared infra) |
 | `src/utils/**` | Load **ALL** specialists (shared infra) |
-| `src/fixtures/**` | Load **ALL** specialists (shared infra) |
+| `src/fixtures/**` | `.agent/rules/fixture-specialist.md` |
 
 ---
 
@@ -60,6 +60,12 @@ AI Orchestrator
  │   ├── API clients handle transport only
  │   ├── Zod schemas define API contracts
  │   └── No assertions in API clients
+ │
+ ├── Fixture Helper Specialist (fixture-specialist.md)  ⭐
+ │   ├── ui.fixture.ts — Page Object injection only
+ │   ├── api.fixture.ts — apiContext + API client lifecycle
+ │   ├── test.fixture.ts — composer only, no logic
+ │   └── Parallel-safe by design
  │
  └── CI / Config Specialist (ci-config-specialist.md)
      ├── Parallel execution safety
